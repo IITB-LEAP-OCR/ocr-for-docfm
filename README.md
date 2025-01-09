@@ -19,7 +19,7 @@ You can also use the streamlit UI to execute the pipeline and download the compr
 streamlit run app.py
 ```
 
-### Step 3 : Visualize the results
+### Step 4 : Visualize the results
 You can also use the streamlit UI to upload the compressed output and see the rendered results
 ```
 streamlit run visualize.py
