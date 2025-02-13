@@ -1,8 +1,4 @@
-try:
-    from PIL import Image
-except ImportError:
-    import Image
-import pytesseract
+from PIL import Image
 import os
 from pdf2image import convert_from_path
 from bs4 import BeautifulSoup
@@ -10,6 +6,7 @@ import time
 import sys
 from config import output_dir, config_dir
 from detection import get_page_layout, get_equation_hocr, get_figure_hocr, get_text_hocr
+from tables import get_table_hocr
 
 def parse_boolean(b):
     return b == "True"
@@ -58,17 +55,6 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
     # tessdata_dir_config = r'--psm 3 --tessdata-dir "/usr/share/tesseract-ocr/4.00/tessdata/"'
 
     print("Selected language model " + lang)
-    # os.environ['CHOSENMODEL'] = lang  # tesslanglist[int(linput)-1]
-    # Creating Final set folders and files
-    # if not os.path.exists(outputDirectory + "/Comments"):
-    #     os.mkdir(outputDirectory + "/Comments")
-    #     os.mknod(outputDirectory + "/Comments/" + 'README.md', mode=0o666)
-    # if not os.path.exists(outputDirectory + "/VerifierOutput"):
-    #     os.mkdir(outputDirectory + "/VerifierOutput")
-    #     os.mknod(outputDirectory + "/VerifierOutput/" + 'README.md', mode=0o666)
-    # if not os.path.exists(outputDirectory + "/Dicts"):
-    #     os.mkdir(outputDirectory + "/Dicts")
-    #     os.mknod(outputDirectory + "/Dicts/" + 'README.md', mode=0o666)
     if not os.path.exists(outputDirectory + "/Cropped_Images"):
         os.mkdir(outputDirectory + "/Cropped_Images")
     if not os.path.exists(outputDirectory + "/Inds"):
@@ -80,7 +66,6 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
         os.mkdir(outputDirectory + "/CorrectorOutput")
         os.mknod(outputDirectory + "/CorrectorOutput/" + 'README.md', mode=0o666)
 
-    os.system(f'cp {config_dir}project.xml ' + outputDirectory)
     individualOutputDir = outputDirectory + "/Inds"
     startOCR = time.time()
 
@@ -95,15 +80,15 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
         dets.sort(key = lambda x : x[1][1])
         hocr_elements = ''
         eqn_cnt = 1
-        fig_cnt = 1
-        class_names = {0: 'title', 1: 'plain_text', 2: 'abandon', 3: 'figure', 4: 'figure_caption', 5: 'table', 6: 'table_caption', 7: 'table_footnote', 8: 'isolate_formula', 9: 'formula_caption'}
+        tab_cnt = 1
+        # class_names = {0: 'title', 1: 'plain_text', 2: 'abandon', 3: 'figure', 4: 'figure_caption', 5: 'table', 6: 'table_caption', 7: 'table_footnote', 8: 'isolate_formula', 9: 'formula_caption'}
         for det in dets:
             cls = det[0]
             bbox = det[1]
             if cls == 8:
                 # Equations
                 eqn_hocr = get_equation_hocr(finalimgtoocr, outputDirectory, page, bbox, eqn_cnt)
-                # eqn_cnt += 1
+                eqn_cnt += 1
                 hocr_elements += eqn_hocr
             elif cls == 3:
                 # Figures
@@ -113,21 +98,16 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
                 hocr_elements += fig_hocr
             elif cls == 5:
                 # Tables
-                hocr = get_text_hocr(finalimgtoocr, bbox, "table")
-                hocr_elements += hocr
+                tab_hocr = get_table_hocr(finalimgtoocr, outputDirectory, page, bbox, tab_cnt, lang)
+                hocr_elements += tab_hocr
             else:
-                hocr = get_text_hocr(finalimgtoocr, bbox, "text")
+                hocr = get_text_hocr(finalimgtoocr, bbox, lang)
                 # Can use class_names[cls] for classname instead
                 hocr_elements += hocr
 
-        # Write txt files for all pages using Tesseract
-        # txt = pytesseract.image_to_string(imagesFolder + "/" + imfile, lang=lang)
-        # with open(individualOutputDir + '/' + imfile[:-3] + 'txt', 'w') as f:
-        #     f.write(txt)
-
         # Now we generate HOCRs using Tesseract
         print('We will OCR the image ' + finalimgtoocr)
-        final_hocr = '<html><head></head><body>' + hocr_elements + '</body></html>'
+        final_hocr = '<html><body>' + hocr_elements + '</body></html>'
         soup = BeautifulSoup(final_hocr, 'html.parser')
 
         # Write final hocrs
@@ -135,13 +115,13 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
         f = open(hocrfile, 'w+')
         f.write(str(soup))
 
-        copy_command = 'cp {}/*.hocr {}/'.format(individualOutputDir, outputDirectory + "/CorrectorOutput")
-        os.system(copy_command)
-        correctorFolder = outputDirectory + "/CorrectorOutput"
-        for hocrfile in os.listdir(correctorFolder):
-            if "hocr" in hocrfile:
-                htmlfile = hocrfile.replace(".hocr", ".html")
-                os.rename(correctorFolder + '/' + hocrfile, correctorFolder + '/' + htmlfile)
+        # copy_command = 'cp {}/*.hocr {}/'.format(individualOutputDir, outputDirectory + "/CorrectorOutput")
+        # os.system(copy_command)
+        # correctorFolder = outputDirectory + "/CorrectorOutput"
+        # for hocrfile in os.listdir(correctorFolder):
+        #     if "hocr" in hocrfile:
+        #         htmlfile = hocrfile.replace(".hocr", ".html")
+        #         os.rename(correctorFolder + '/' + hocrfile, correctorFolder + '/' + htmlfile)
 
     # Calculate the time elapsed for entire OCR process
     endOCR = time.time()
