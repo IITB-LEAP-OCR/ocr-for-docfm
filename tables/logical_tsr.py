@@ -39,37 +39,9 @@ def get_cell_spans(otsl_matrix, i, j):
         cs = count_contiguous_occurrences(col_seq, 'U')
         return rs, cs
 
-# def get_conv_html_from_otsl(otsl_matrix, R, C):
-#     html_string = '<html><table><tbody>'
-#     # Generate string
-#     for i in range(R):
-#         html_string += '<tr>'
-#         for j in range(C + 1):
-#             e = otsl_matrix[i][j]
-#             if e == 'C':
-#                 rs, cs = get_cell_spans(otsl_matrix, i, j)
-#                 if rs and cs:
-#                     # There is rowspan and colspan
-#                     html_string += f'<td rowpsan="{rs + 1}" colspan="{cs + 1}"></td>'
-#                 elif rs and not cs:
-#                     # There is only row span
-#                     html_string += f'<td colspan="{rs + 1}"></td>'
-#                 elif not rs and cs:
-#                     # There is only col span
-#                     html_string += f'<td rowspan="{cs + 1}"></td>'
-#                 else:
-#                     # Normal cell
-#                     html_string += '<td></td>'
-#             elif e == 'N':
-#                 # New row will start
-#                 html_string += '</tr>'
-#             else:
-#                 continue
-#     html_string += '</tbody></table></html>'
-#     return html_string
 
 def get_conv_html_from_otsl_with_cells(otsl_matrix, R, C, cells):
-    html_string = '<table border="1" class="ocr_tab" title=""><tbody>'
+    html_string = '<table><tbody>'
     struc_cells = []
     # Generate string
     for i in range(R):
@@ -83,20 +55,20 @@ def get_conv_html_from_otsl_with_cells(otsl_matrix, R, C, cells):
                     # There is rowspan and colspan
                     extension = cells[i + 1 + cs][j + rs]
                     td_cell = [td_cell[0], td_cell[1], extension[2], extension[3]]
-                    html_string += f'<td rowpsan="{rs + 1}" colspan="{cs + 1}" title="bbox {td_cell[0]} {td_cell[1]} {td_cell[2]} {td_cell[3]}"></td>'
+                    html_string += f'<td rowpsan="{rs + 1}" colspan="{cs + 1}" bbox="{td_cell[0]} {td_cell[1]} {td_cell[2]} {td_cell[3]}"></td>'
                 elif rs and not cs:
                     # There is only row span
                     extension = cells[i + 1][j + rs]
                     td_cell = [td_cell[0], td_cell[1], extension[2], td_cell[3]]
-                    html_string += f'<td colspan="{rs + 1}" title="bbox {td_cell[0]} {td_cell[1]} {td_cell[2]} {td_cell[3]}"></td>'
+                    html_string += f'<td colspan="{rs + 1}" bbox="{td_cell[0]} {td_cell[1]} {td_cell[2]} {td_cell[3]}"></td>'
                 elif not rs and cs:
                     # There is only col span
                     extension = cells[i + 1 + cs][j]
                     td_cell = [td_cell[0], td_cell[1], td_cell[2], extension[3]]
-                    html_string += f'<td rowspan="{cs + 1}" title="bbox {td_cell[0]} {td_cell[1]} {td_cell[2]} {td_cell[3]}"></td>'
+                    html_string += f'<td rowspan="{cs + 1}" bbox="{td_cell[0]} {td_cell[1]} {td_cell[2]} {td_cell[3]}"></td>'
                 else:
                     # Normal cell
-                    html_string += f'<td title="bbox {td_cell[0]} {td_cell[1]} {td_cell[2]} {td_cell[3]}"></td>'
+                    html_string += f'<td bbox="{td_cell[0]} {td_cell[1]} {td_cell[2]} {td_cell[3]}"></td>'
                 struc_cells.append(td_cell)
             elif e == 'N':
                 # New row will start
@@ -171,7 +143,7 @@ def get_logical_structure(img_file, device):
     input_img = torch.stack([img])
 
     # if not torch.device("cpu"):
-    input_img = input_img.to(torch.device('cuda:0'))
+    input_img = input_img.to(torch.device('cpu'))
 
     # Infer
     pred = model(input_img, None, return_preds=True)

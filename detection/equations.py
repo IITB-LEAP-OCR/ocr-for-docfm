@@ -15,7 +15,7 @@ def get_equation_hocr(image_path, outputDirectory, pagenumber, eqn_bbox, count):
     image_file_name = '/Cropped_Images/equation_' + str(pagenumber) + '_' + str(count) + '.jpg'
     cv2.imwrite(outputDirectory + image_file_name, cropped_image)
     equation_recog = get_equation_recognition(outputDirectory + image_file_name)
-    eqn_hocr = f'<p class=\"equation\" bbox=\"{fig[0]} {fig[1]} {fig[2]} {fig[3]}\">{equation_recog}</p>\n'
+    eqn_hocr = f'<span bbox=\"{fig[0]} {fig[1]} {fig[2]} {fig[3]}\">{equation_recog}</span>\n'
     return eqn_hocr
 
 if __name__ == "__main__":

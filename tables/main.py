@@ -58,8 +58,8 @@ def perform_tsr(img_file, x1, y1, struct_only, lang):
     if struct_only == False:
         cropped_img = cv2.imread(img_file)
         for bbox in soup.find_all('td'):
-            # Replace the content inside the div with its 'title' attribute value
-            ocr_bbox = bbox['title'].split(' ')[1:]
+            # Replace the content inside the div with its 'bbox' attribute value
+            ocr_bbox = bbox['bbox'].split(' ')
             ocr_bbox = list(map(int, ocr_bbox))
             bbox.string = get_cell_ocr(cropped_img, ocr_bbox, lang)
             # Correct wrt table coordinates
