@@ -55,31 +55,30 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
     print("Now we will OCR")
     os.environ['IMAGESFOLDER'] = imagesFolder
     os.environ['OUTPUTDIRECTORY'] = outputDirectory
-    tessdata_dir_config = r'--psm 3 --tessdata-dir "/usr/share/tesseract-ocr/4.00/tessdata/"'
+    # tessdata_dir_config = r'--psm 3 --tessdata-dir "/usr/share/tesseract-ocr/4.00/tessdata/"'
 
     print("Selected language model " + lang)
-    os.environ['CHOSENMODEL'] = lang  # tesslanglist[int(linput)-1]
-    if not os.path.exists(outputDirectory + "/CorrectorOutput"):
-        os.mkdir(outputDirectory + "/CorrectorOutput")
-        os.mknod(outputDirectory + "/CorrectorOutput/" + 'README.md', mode=0o666)
-
+    # os.environ['CHOSENMODEL'] = lang  # tesslanglist[int(linput)-1]
     # Creating Final set folders and files
-    if not os.path.exists(outputDirectory + "/Comments"):
-        os.mkdir(outputDirectory + "/Comments")
-        os.mknod(outputDirectory + "/Comments/" + 'README.md', mode=0o666)
-    if not os.path.exists(outputDirectory + "/VerifierOutput"):
-        os.mkdir(outputDirectory + "/VerifierOutput")
-        os.mknod(outputDirectory + "/VerifierOutput/" + 'README.md', mode=0o666)
+    # if not os.path.exists(outputDirectory + "/Comments"):
+    #     os.mkdir(outputDirectory + "/Comments")
+    #     os.mknod(outputDirectory + "/Comments/" + 'README.md', mode=0o666)
+    # if not os.path.exists(outputDirectory + "/VerifierOutput"):
+    #     os.mkdir(outputDirectory + "/VerifierOutput")
+    #     os.mknod(outputDirectory + "/VerifierOutput/" + 'README.md', mode=0o666)
+    # if not os.path.exists(outputDirectory + "/Dicts"):
+    #     os.mkdir(outputDirectory + "/Dicts")
+    #     os.mknod(outputDirectory + "/Dicts/" + 'README.md', mode=0o666)
+    if not os.path.exists(outputDirectory + "/Cropped_Images"):
+        os.mkdir(outputDirectory + "/Cropped_Images")
     if not os.path.exists(outputDirectory + "/Inds"):
         os.mkdir(outputDirectory + "/Inds")
         os.mknod(outputDirectory + "/Inds/" + 'README.md', mode=0o666)
-    if not os.path.exists(outputDirectory + "/Dicts"):
-        os.mkdir(outputDirectory + "/Dicts")
-        os.mknod(outputDirectory + "/Dicts/" + 'README.md', mode=0o666)
-    if not os.path.exists(outputDirectory + "/Cropped_Images"):
-        os.mkdir(outputDirectory + "/Cropped_Images")
     if not os.path.exists(outputDirectory + "/Layout_Images"):
         os.mkdir(outputDirectory + "/Layout_Images")
+    if not os.path.exists(outputDirectory + "/CorrectorOutput"):
+        os.mkdir(outputDirectory + "/CorrectorOutput")
+        os.mknod(outputDirectory + "/CorrectorOutput/" + 'README.md', mode=0o666)
 
     os.system(f'cp {config_dir}project.xml ' + outputDirectory)
     individualOutputDir = outputDirectory + "/Inds"
@@ -104,15 +103,21 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
             if cls == 8:
                 # Equations
                 eqn_hocr = get_equation_hocr(finalimgtoocr, outputDirectory, page, bbox, eqn_cnt)
-                eqn_cnt += 1
+                # eqn_cnt += 1
                 hocr_elements += eqn_hocr
             elif cls == 3:
                 # Figures
-                fig_hocr = get_figure_hocr(finalimgtoocr, outputDirectory, page, bbox, fig_cnt)
-                fig_cnt += 1
+                fig_hocr = get_figure_hocr(bbox)
+                # fig_hocr = get_figure_hocr(finalimgtoocr, outputDirectory, page, bbox, fig_cnt)
+                # fig_cnt += 1
                 hocr_elements += fig_hocr
+            elif cls == 5:
+                # Tables
+                hocr = get_text_hocr(finalimgtoocr, bbox, "table")
+                hocr_elements += hocr
             else:
-                hocr = get_text_hocr(finalimgtoocr, bbox, class_names[cls])
+                hocr = get_text_hocr(finalimgtoocr, bbox, "text")
+                # Can use class_names[cls] for classname instead
                 hocr_elements += hocr
 
         # Write txt files for all pages using Tesseract

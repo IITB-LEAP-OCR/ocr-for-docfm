@@ -7,12 +7,12 @@ model = YOLOv10(filepath)
 
 # class_names = {0: 'title', 1: 'plain text', 2: 'abandon', 3: 'figure', 4: 'figure_caption', 5: 'table', 6: 'table_caption', 7: 'table_footnote', 8: 'isolate_formula', 9: 'formula_caption'}
 
-def get_page_layout(image_path, layout_annotated_image_path):
+def get_page_layout(image_path, layout_annotated_image_path, device = 'cpu'):
     det_res = model.predict(
     image_path,   # Image to predict
-    imgsz=1024,        # Prediction image size
-    conf=0.1,          # Confidence threshold
-    device="cpu",    # Device to use (e.g., 'cuda:0' or 'cpu')
+    imgsz = 1024,        # Prediction image size
+    conf = 0.1,          # Confidence threshold
+    device = device,    # Device to use (e.g., 'cuda:0' or 'cpu')
     save = False)
 
     dets = []
