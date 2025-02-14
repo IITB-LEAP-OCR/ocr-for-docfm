@@ -1,8 +1,6 @@
 from doclayout_yolo import YOLOv10
-from doclayout_yolo.utils.ops import non_max_suppression
 from huggingface_hub import hf_hub_download
 import cv2
-from tensorboard.util import io_util
 
 filepath = hf_hub_download(repo_id="juliozhao/DocLayout-YOLO-DocStructBench", filename="doclayout_yolo_docstructbench_imgsz1024.pt")
 model = YOLOv10(filepath)

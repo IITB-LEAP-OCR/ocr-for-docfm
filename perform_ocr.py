@@ -62,9 +62,9 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
         os.mknod(outputDirectory + "/Inds/" + 'README.md', mode=0o666)
     if not os.path.exists(outputDirectory + "/Layout_Images"):
         os.mkdir(outputDirectory + "/Layout_Images")
-    if not os.path.exists(outputDirectory + "/CorrectorOutput"):
-        os.mkdir(outputDirectory + "/CorrectorOutput")
-        os.mknod(outputDirectory + "/CorrectorOutput/" + 'README.md', mode=0o666)
+    # if not os.path.exists(outputDirectory + "/CorrectorOutput"):
+    #     os.mkdir(outputDirectory + "/CorrectorOutput")
+    #     os.mknod(outputDirectory + "/CorrectorOutput/" + 'README.md', mode=0o666)
 
     individualOutputDir = outputDirectory + "/Inds"
     startOCR = time.time()
