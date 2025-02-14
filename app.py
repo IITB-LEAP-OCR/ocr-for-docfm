@@ -2,6 +2,7 @@ import streamlit as st
 from perform_ocr import pdf_to_txt
 import zipfile, os
 from config import input_dir
+import pytesseract
 
 
 def save_uploaded_file(uploadedfile):
@@ -9,9 +10,13 @@ def save_uploaded_file(uploadedfile):
         f.write(uploadedfile.getbuffer())
     return st.success("Saved File:{} to tempDir".format(uploadedfile.name))
 
+st.title('Custom HOCR for DocFM')
 input_file = st.file_uploader('Choose your .pdf file', type="pdf")
 outputsetname = st.text_input(label= "Enter output set name  here", value="")
 language = st.text_input(label= "Enter language here", value="eng")
+langs = pytesseract.get_languages()
+avail_langs = 'Available languages are : ' + str(langs)
+st.text(avail_langs)
 if len(outputsetname) and len(input_file.name):
     go = st.button("Get OCR")
     if go:
