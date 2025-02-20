@@ -1,4 +1,4 @@
-# arxiv-document-ocr
+# ocr-for-docfm
 Pipeline specifically curated for processing pretraining dataset for pre-training the foundational model for document understanding (DocFM)
 
 ### Step 1 : Install Requirements
