@@ -1,18 +1,20 @@
 from doclayout_yolo import YOLOv10
-from huggingface_hub import hf_hub_download
 import torchvision
 import cv2
+import pathlib
 
-filepath = hf_hub_download(repo_id="juliozhao/DocLayout-YOLO-DocStructBench", filename="doclayout_yolo_docstructbench_imgsz1024.pt")
-model = YOLOv10(filepath)
+current_dir = pathlib.Path(__file__).parent.absolute()
+model_path = str(current_dir) + "/model/doclayout_yolo_dsb_1024.pt"
+print(model_path)
+model = YOLOv10(model_path)
 class_names = {0: 'title', 1: 'plain text', 2: 'abandon', 3: 'figure', 4: 'figure_caption', 5: 'table', 6: 'table_caption', 7: 'table_footnote', 8: 'isolate_formula', 9: 'formula_caption'}
 
 def get_page_layout(image_path, layout_annotated_image_path, device = 'cpu'):
     det_res = model.predict(
-    image_path,   # Image to predict
-    imgsz = 1024,        # Prediction image size
-    conf = 0.1,          # Confidence threshold
-    iou = 0.0001,          # NMS Threshold ??
+    image_path,         # Image to predict
+    imgsz = 1024,       # Prediction image size
+    conf = 0.1,         # Confidence threshold
+    iou = 0.0001,       # NMS Threshold ??
     device = device,    # Device to use (e.g., 'cuda:0' or 'cpu')
     save = False)
     dets = []
