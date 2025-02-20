@@ -1,5 +1,5 @@
 # ocr-for-docfm
-Pipeline specifically curated for processing pretraining dataset for pre-training the foundational model for document understanding (DocFM)
+Pipeline specifically curated for Scientific Documents for pre-training the foundational model for document understanding (DocFM)
 
 ### Step 1 : Install Requirements
 You may create and use a virtual environment to install the following dependencies
