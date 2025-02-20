@@ -20,7 +20,7 @@ streamlit run app.py
 ```
 
 ### Step 4 : Visualize the results
-You can also use the streamlit UI to upload the compressed output and see the rendered results
+You can also use the streamlit UI to upload the compressed output and see the rendered results. NOTE: This feature will work only if you generate HTMLs in CorrectorOutput folder which is disabled now. This is available in the document-ocr pipeline
 ```
 streamlit run viewer.py
 ```
