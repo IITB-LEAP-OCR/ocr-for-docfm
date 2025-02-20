@@ -39,7 +39,6 @@ def get_cell_spans(otsl_matrix, i, j):
         cs = count_contiguous_occurrences(col_seq, 'U')
         return rs, cs
 
-
 def get_conv_html_from_otsl_with_cells(otsl_matrix, R, C, cells):
     html_string = '<table><tbody>'
     struc_cells = []
@@ -143,7 +142,8 @@ def get_logical_structure(img_file, device):
     input_img = torch.stack([img])
 
     # if not torch.device("cpu"):
-    input_img = input_img.to(torch.device('cpu'))
+    print('SPRINT inference on ' + str(device))
+    input_img = input_img.to(device)
 
     # Infer
     pred = model(input_img, None, return_preds=True)

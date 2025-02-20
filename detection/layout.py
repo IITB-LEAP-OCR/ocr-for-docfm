@@ -16,7 +16,8 @@ def get_page_layout(image_path, layout_annotated_image_path, device = 'cpu'):
     conf = 0.1,         # Confidence threshold
     iou = 0.0001,       # NMS Threshold ??
     device = device,    # Device to use (e.g., 'cuda:0' or 'cpu')
-    save = False)
+    save = False,       # No need to save annotated image
+    verbose = False)
     dets = []
     for entry in det_res:
         bboxes = entry.boxes.xyxy
