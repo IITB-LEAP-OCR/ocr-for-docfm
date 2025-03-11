@@ -14,3 +14,5 @@ torch==2.3.0
 torchvision==0.18.0
 numpy==1.24.4
 streamlit==1.43.1
+albucore==0.0.16
+albumentations==1.4.15
