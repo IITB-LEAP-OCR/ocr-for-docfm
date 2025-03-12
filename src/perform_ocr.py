@@ -6,6 +6,7 @@ import sys
 from src.config import output_dir
 from detection import get_page_layout, get_equation_hocr, get_figure_hocr, get_text_hocr
 from tables import get_table_hocr
+import torch
 
 def parse_boolean(b):
     return b == "True"
@@ -51,8 +52,6 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
     print("Now we will OCR")
     os.environ['IMAGESFOLDER'] = imagesFolder
     os.environ['OUTPUTDIRECTORY'] = outputDirectory
-    # tessdata_dir_config = r'--psm 3 --tessdata-dir "/usr/share/tesseract-ocr/4.00/tessdata/"'
-
     print("Selected language model " + lang)
     if not os.path.exists(outputDirectory + "/Cropped_Images"):
         os.mkdir(outputDirectory + "/Cropped_Images")
@@ -66,6 +65,8 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
     #     os.mknod(outputDirectory + "/CorrectorOutput/" + 'README.md', mode=0o666)
 
     individualOutputDir = outputDirectory + "/Inds"
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # print(device)
     startOCR = time.time()
 
     for imfile in os.listdir(imagesFolder):
@@ -74,8 +75,7 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
         dot = imfile.index('.')
         page = int(imfile[dash + 1 : dot])
         layout_annotated_image_path = outputDirectory + "/Layout_Images/" + imfile
-
-        dets = get_page_layout(finalimgtoocr, layout_annotated_image_path)
+        dets = get_page_layout(finalimgtoocr, layout_annotated_image_path, device)
         dets.sort(key = lambda x : x[1][1])
         hocr_elements = ''
         eqn_cnt = 1

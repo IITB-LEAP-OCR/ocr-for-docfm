@@ -6,11 +6,19 @@ from bs4 import BeautifulSoup
 import pathlib
 import torch
 import cv2
+import numpy as np
 
 CURRENT_DIR = pathlib.Path(__file__).parent.absolute()
 
 def get_cell_ocr(img, bbox, lang):
     cell_img = img[bbox[1]:bbox[3], bbox[0]:bbox[2]]
+    # laplacian = cv2.Laplacian(cell_img,cv2.CV_8UC1) # Laplacian Edge Detection
+    # h, w, c = cell_img.shape
+    # minLineLength = min(int(0.9 * h), int(0.9 * w))
+    # lines = cv2.HoughLinesP(laplacian, 1, np.pi/180, 100, minLineLength)
+    # for line in lines:
+    #     for x1,y1,x2,y2 in line:
+    #         cv2.line(cell_img,(x1, y1), (x2, y2), (255, 255, 255), 1)
     cell_pil_img = Image.fromarray(cell_img)
     ocr_result = pytesseract.image_to_string(cell_pil_img, config='--psm 6', lang = lang)
     ocr_result = ocr_result.replace("\n", " ")
