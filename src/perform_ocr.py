@@ -1,10 +1,9 @@
-from PIL import Image
 import os
 from pdf2image import convert_from_path
 from bs4 import BeautifulSoup
 import time
 import sys
-from config import output_dir, config_dir
+from src.config import output_dir
 from detection import get_page_layout, get_equation_hocr, get_figure_hocr, get_text_hocr
 from tables import get_table_hocr
 

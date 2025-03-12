@@ -1,4 +1,4 @@
-from perform_ocr import pdf_to_txt
+from src.perform_ocr import pdf_to_txt
 
 input_file = 'data/input/1.pdf'
 outputsetname = '2-nms'

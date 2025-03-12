@@ -1,7 +1,7 @@
 import streamlit as st
-from perform_ocr import pdf_to_txt
+from src.perform_ocr import pdf_to_txt
 import zipfile, os
-from config import input_dir
+from src.config import input_dir
 import pytesseract
 
 
