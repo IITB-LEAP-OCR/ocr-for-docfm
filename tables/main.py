@@ -1,29 +1,12 @@
-from PIL import Image
-import pytesseract
 from .physical_tsr import get_cols_from_tatr, get_cells_from_rows_cols, get_rows_from_tatr
 from .logical_tsr import get_logical_structure, align_otsl_from_rows_cols, convert_to_html
+from .ocr import get_table_ocr_all_at_once, get_cell_ocr
 from bs4 import BeautifulSoup
 import pathlib
 import torch
 import cv2
-import numpy as np
 
 CURRENT_DIR = pathlib.Path(__file__).parent.absolute()
-
-def get_cell_ocr(img, bbox, lang):
-    cell_img = img[bbox[1]:bbox[3], bbox[0]:bbox[2]]
-    # laplacian = cv2.Laplacian(cell_img,cv2.CV_8UC1) # Laplacian Edge Detection
-    # h, w, c = cell_img.shape
-    # minLineLength = min(int(0.9 * h), int(0.9 * w))
-    # lines = cv2.HoughLinesP(laplacian, 1, np.pi/180, 100, minLineLength)
-    # for line in lines:
-    #     for x1,y1,x2,y2 in line:
-    #         cv2.line(cell_img,(x1, y1), (x2, y2), (255, 255, 255), 1)
-    cell_pil_img = Image.fromarray(cell_img)
-    ocr_result = pytesseract.image_to_string(cell_pil_img, config='--psm 6', lang = lang)
-    ocr_result = ocr_result.replace("\n", " ")
-    ocr_result = ocr_result[:-1]
-    return ocr_result
 
 def order_rows_cols(rows, cols):
     # Order rows from top to bottom based on y1 (second value in the bounding box)
@@ -47,7 +30,7 @@ def perform_tsr(img_file, x1, y1, struct_only, lang):
         h, w, c = table_img.shape
         bbox = [0, 0, w, h]
         text = get_cell_ocr(table_img, bbox, lang)
-        html_string = '<html><table><tr><td>' + text + '</td></tr></table></html>'
+        html_string = '<p>' + text + '</p>'
         return html_string
     print('Logical TSR')
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -65,17 +48,7 @@ def perform_tsr(img_file, x1, y1, struct_only, lang):
     # Do this if struct_only flag is FALSE
     if struct_only == False:
         cropped_img = cv2.imread(img_file)
-        for bbox in soup.find_all('td'):
-            # Replace the content inside the div with its 'bbox' attribute value
-            ocr_bbox = bbox['bbox'].split(' ')
-            ocr_bbox = list(map(int, ocr_bbox))
-            bbox.string = get_cell_ocr(cropped_img, ocr_bbox, lang)
-            # Correct wrt table coordinates
-            ocr_bbox[0] += x1
-            ocr_bbox[1] += y1
-            ocr_bbox[2] += x1
-            ocr_bbox[3] += y1
-            bbox['bbox'] = f'{ocr_bbox[0]} {ocr_bbox[1]} {ocr_bbox[2]} {ocr_bbox[3]}'
+        soup = get_table_ocr_all_at_once(cropped_img, soup, lang, x1, y1)
 
     return soup, struc_cells
 

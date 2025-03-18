@@ -40,7 +40,7 @@ def get_cell_spans(otsl_matrix, i, j):
         return rs, cs
 
 def get_conv_html_from_otsl_with_cells(otsl_matrix, R, C, cells):
-    html_string = '<table><tbody>'
+    html_string = '<table border><tbody>'
     struc_cells = []
     # Generate string
     for i in range(R):

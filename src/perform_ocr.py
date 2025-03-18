@@ -45,7 +45,7 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
     print('cwd is', os.getcwd())
     print("orig_pdf_path is", orig_pdf_path)
     if (parse_boolean(imageConvertOption)):
-        convert_from_path(orig_pdf_path, output_folder=imagesFolder, dpi=300, fmt='jpeg', jpegopt=jpegopt,
+        convert_from_path(orig_pdf_path, output_folder=imagesFolder, dpi=500, fmt='jpeg', jpegopt=jpegopt,
                           output_file=output_file)
 
     print("images created.")
