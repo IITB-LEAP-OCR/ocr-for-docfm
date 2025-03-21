@@ -9,7 +9,7 @@ print(model_path)
 model = YOLOv10(model_path)
 class_names = {0: 'title', 1: 'plain text', 2: 'abandon', 3: 'figure', 4: 'figure_caption', 5: 'table', 6: 'table_caption', 7: 'table_footnote', 8: 'isolate_formula', 9: 'formula_caption'}
 
-def get_page_layout(image_path, layout_annotated_image_path, device = 'cpu'):
+def get_page_layout(image_path, layout_annotated_image_path, device = 'cpu', save_layout_predictions = False):
     det_res = model.predict(
     image_path,         # Image to predict
     imgsz = 1024,       # Prediction image size
@@ -30,7 +30,8 @@ def get_page_layout(image_path, layout_annotated_image_path, device = 'cpu'):
         for i in range(len(bboxes)):
             box = bboxes[i]
             dets.append([classes[i], [int(box[0]), int(box[1]), int(box[2]), int(box[3])]])
-        draw_bboxes(image_path, dets, layout_annotated_image_path)
+        if save_layout_predictions:
+            draw_bboxes(image_path, dets, layout_annotated_image_path)
     return dets
 
 def draw_bboxes(image_path, dets, layout_annotated_image_path):

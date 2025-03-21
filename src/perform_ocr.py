@@ -18,7 +18,9 @@ def simple_counter_generator(prefix="", suffix=""):
         i += 1
         yield 'p'
 
-def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
+def pdf_to_txt(orig_pdf_path, project_folder_name, lang,
+               preserve_equations = True, preserve_figures = True, preserve_tables = True,
+               save_layout_predictions = False, save_html_files = False):
     outputDirIn = output_dir
     outputDirectory = outputDirIn + project_folder_name
     print('Output directory is ', outputDirectory)
@@ -31,7 +33,6 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
         os.mkdir(outputDirectory + "/Images")
 
     imagesFolder = outputDirectory + "/Images"
-    imageConvertOption = 'True'
 
     print("converting pdf to images")
     jpegopt = {
@@ -44,25 +45,19 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
     print('orig pdf oath is', orig_pdf_path)
     print('cwd is', os.getcwd())
     print("orig_pdf_path is", orig_pdf_path)
-    if (parse_boolean(imageConvertOption)):
-        convert_from_path(orig_pdf_path, output_folder=imagesFolder, dpi=500, fmt='jpeg', jpegopt=jpegopt,
-                          output_file=output_file)
-
-    print("images created.")
-    print("Now we will OCR")
+    convert_from_path(orig_pdf_path, output_folder=imagesFolder, dpi=400, fmt='jpeg', jpegopt=jpegopt, output_file=output_file)
+    print("Images created... now we will OCR")
     os.environ['IMAGESFOLDER'] = imagesFolder
     os.environ['OUTPUTDIRECTORY'] = outputDirectory
-    print("Selected language model " + lang)
+    print("Selected OCR language model: " + lang)
     if not os.path.exists(outputDirectory + "/Cropped_Images"):
         os.mkdir(outputDirectory + "/Cropped_Images")
     if not os.path.exists(outputDirectory + "/Inds"):
         os.mkdir(outputDirectory + "/Inds")
-        os.mknod(outputDirectory + "/Inds/" + 'README.md', mode=0o666)
-    if not os.path.exists(outputDirectory + "/Layout_Images"):
+    if save_layout_predictions and not os.path.exists(outputDirectory + "/Layout_Images"):
         os.mkdir(outputDirectory + "/Layout_Images")
-    # if not os.path.exists(outputDirectory + "/CorrectorOutput"):
-    #     os.mkdir(outputDirectory + "/CorrectorOutput")
-    #     os.mknod(outputDirectory + "/CorrectorOutput/" + 'README.md', mode=0o666)
+    if save_html_files and not os.path.exists(outputDirectory + "/CorrectorOutput"):
+        os.mkdir(outputDirectory + "/CorrectorOutput")
 
     individualOutputDir = outputDirectory + "/Inds"
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -75,30 +70,31 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
         dot = imfile.index('.')
         page = int(imfile[dash + 1 : dot])
         layout_annotated_image_path = outputDirectory + "/Layout_Images/" + imfile
-        dets = get_page_layout(finalimgtoocr, layout_annotated_image_path, device)
+        dets = get_page_layout(finalimgtoocr, layout_annotated_image_path, device, save_layout_predictions)
         dets.sort(key = lambda x : x[1][1])
         hocr_elements = ''
         eqn_cnt = 1
         tab_cnt = 1
+        fig_cnt = 1
         # class_names = {0: 'title', 1: 'plain_text', 2: 'abandon', 3: 'figure', 4: 'figure_caption', 5: 'table', 6: 'table_caption', 7: 'table_footnote', 8: 'isolate_formula', 9: 'formula_caption'}
         for det in dets:
             cls = det[0]
             bbox = det[1]
-            if cls == 8:
+            if preserve_equations and cls == 8:
                 # Equations
                 eqn_hocr = get_equation_hocr(finalimgtoocr, outputDirectory, page, bbox, eqn_cnt)
                 eqn_cnt += 1
                 hocr_elements += eqn_hocr
-            elif cls == 3:
+            elif preserve_figures and cls == 3:
                 # Figures
-                fig_hocr = get_figure_hocr(bbox)
-                # fig_hocr = get_figure_hocr(finalimgtoocr, outputDirectory, page, bbox, fig_cnt)
-                # fig_cnt += 1
+                fig_hocr = get_figure_hocr(finalimgtoocr, outputDirectory, page, bbox, fig_cnt)
+                fig_cnt += 1
                 hocr_elements += fig_hocr
-            elif cls == 5:
+            elif preserve_tables and cls == 5:
                 # Tables
                 tab_hocr = get_table_hocr(finalimgtoocr, outputDirectory, page, bbox, tab_cnt, lang)
                 hocr_elements += tab_hocr
+                tab_cnt += 1
             else:
                 hocr = get_text_hocr(finalimgtoocr, bbox, lang)
                 # Can use class_names[cls] for classname instead
@@ -114,13 +110,15 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang):
         f = open(hocrfile, 'w+')
         f.write(str(soup))
 
-        # copy_command = 'cp {}/*.hocr {}/'.format(individualOutputDir, outputDirectory + "/CorrectorOutput")
-        # os.system(copy_command)
-        # correctorFolder = outputDirectory + "/CorrectorOutput"
-        # for hocrfile in os.listdir(correctorFolder):
-        #     if "hocr" in hocrfile:
-        #         htmlfile = hocrfile.replace(".hocr", ".html")
-        #         os.rename(correctorFolder + '/' + hocrfile, correctorFolder + '/' + htmlfile)
+        if save_html_files:
+            # Ideally you can process these HOCR files more to manually crop images and inseert sources and format as required
+            copy_command = 'cp {}/*.hocr {}/'.format(individualOutputDir, outputDirectory + "/CorrectorOutput")
+            os.system(copy_command)
+            correctorFolder = outputDirectory + "/CorrectorOutput"
+            for hocrfile in os.listdir(correctorFolder):
+                if "hocr" in hocrfile:
+                    htmlfile = hocrfile.replace(".hocr", ".html")
+                    os.rename(correctorFolder + '/' + hocrfile, correctorFolder + '/' + htmlfile)
 
     # Calculate the time elapsed for entire OCR process
     endOCR = time.time()
