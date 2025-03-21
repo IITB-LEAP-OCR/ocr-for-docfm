@@ -62,7 +62,7 @@ def get_table_hocr(finalimgtoocr, outputDirectory, page, bbox, tab_cnt, lang):
     table_tag = soup.find('table')
     table_tag['bbox'] = f'{bbox[0]} {bbox[1]} {bbox[2]} {bbox[3]}'
     # Remove 'bbox' attributes from all <td> tags as that is different coordinate space
-    for tag in soup.find_all(["td", "table"]):
+    for tag in soup.find_all(["td"]):
         if "bbox" in tag.attrs:
             del tag["bbox"]
     return str(soup)[6:-7] + '\n'
