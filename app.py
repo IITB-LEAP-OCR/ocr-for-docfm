@@ -6,6 +6,7 @@ import pytesseract
 import sys
 import io
 
+st.set_page_config(layout="wide")
 
 def save_uploaded_file(uploadedfile):
     with open(os.path.join(input_dir, uploadedfile.name), "wb") as f:

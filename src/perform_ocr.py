@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import time
 import sys
 from src.config import output_dir
-from detection import get_page_layout, get_equation_hocr, get_figure_hocr, get_text_hocr
+from detection import get_page_layout, get_equation_hocr, get_figure_hocr, get_text_hocr, get_text_hocr_line_wise
 from tables import get_table_hocr
 import torch
 
@@ -71,7 +71,7 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang,
         page = int(imfile[dash + 1 : dot])
         layout_annotated_image_path = outputDirectory + "/Layout_Images/" + imfile
         dets = get_page_layout(finalimgtoocr, layout_annotated_image_path, device, save_layout_predictions)
-        dets.sort(key = lambda x : x[1][1])
+        dets.sort(key = lambda x : x[1][0] + int(0.1 * x[1][1]))
         hocr_elements = ''
         eqn_cnt = 1
         tab_cnt = 1
@@ -95,10 +95,15 @@ def pdf_to_txt(orig_pdf_path, project_folder_name, lang,
                 tab_hocr = get_table_hocr(finalimgtoocr, outputDirectory, page, bbox, tab_cnt, lang)
                 hocr_elements += tab_hocr
                 tab_cnt += 1
+            elif cls == 1:
+                hocr = get_text_hocr_line_wise(finalimgtoocr, bbox, lang)
+                # Can use class_names[cls] for classname instead
+                hocr_elements += hocr
             else:
                 hocr = get_text_hocr(finalimgtoocr, bbox, lang)
                 # Can use class_names[cls] for classname instead
                 hocr_elements += hocr
+
 
         # Now we generate HOCRs using Tesseract
         print('We will OCR the image ' + finalimgtoocr)
